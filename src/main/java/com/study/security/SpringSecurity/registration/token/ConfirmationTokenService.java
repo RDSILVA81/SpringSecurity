@@ -6,6 +6,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -17,18 +18,13 @@ public class ConfirmationTokenService {
         confirmationTokenRepository.save(token);
     }
 
-    public String confirmToken(String token){
-        var confirmationToken =
-                confirmationTokenRepository.findByToken(token)
-                        .orElseThrow(()-> new IllegalStateException("Token not found"));
-        if(confirmationToken.getConfirmedAt() != null){
-            throw new IllegalStateException("Token already confirmed");
-        }
-        if(confirmationToken.getConfirmedAt().isBefore(LocalDateTime.now())){
-            throw new IllegalStateException("Token expired");
-        }
-        confirmationTokenRepository.updateConfirmedToken(token, LocalDateTime.now());
-        return null;
+    public Optional<ConfirmationToken> getToken(String token) {
+        return confirmationTokenRepository.findByToken(token);
+    }
+
+    public int setConfirmedAt(String token) {
+        return confirmationTokenRepository.updateConfirmedAt(
+                token, LocalDateTime.now());
     }
 
 
